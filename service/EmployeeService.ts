@@ -1,3 +1,6 @@
+import { Service, NedbServiceOptions } from "feathers-nedb"
+import { Application } from "@feathersjs/express"
+
 import uuid from "uuid"
 
 export interface Employee {
@@ -8,7 +11,11 @@ export interface Employee {
     hoursPerFrame: number
 }
 
-export class EmployeeService {
+export class EmployeeService extends Service {
+    constructor(options: Partial<NedbServiceOptions>, app: Application) {
+        super(options)
+    }
+    /*
     employees: Employee[] = []
     async find() {
         return this.employees
@@ -30,4 +37,5 @@ export class EmployeeService {
         this.employees.push(employee)
         return employee
     }
+*/
 }

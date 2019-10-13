@@ -1,6 +1,9 @@
 import feathers from "@feathersjs/feathers"
 import "@feathersjs/transport-commons"
 import express from "@feathersjs/express"
+import socketio from "@feathersjs/socketio"
+import NeDB from "nedb"
+import path from "path"
 
 import {
     TimeRecordService,
@@ -9,15 +12,30 @@ import {
     TimeRecord,
 } from "./service"
 
+const Model = new NeDB({
+    filename: path.join("./data", "employees.db"),
+    autoload: true,
+})
+
+const options = {
+    Model,
+    id: "id",
+    paginate: {
+        default: 2,
+        max: 4,
+    },
+}
+
 const app = express(feathers())
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.configure(express.rest())
+app.configure(socketio())
 app.use(express.errorHandler())
 
 app.use("/records", new TimeRecordService())
-app.use("/users", new EmployeeService())
+app.use("/users", new EmployeeService(options, app))
 
 app.use("/users/:userId/records", app.service("records"))
 
@@ -44,6 +62,7 @@ app.service("users").on("created", (message: Employee) => {
 app.service("records").on("created", (message: TimeRecord) => {
     console.log("A new Record has been created", message)
 })
+
 const main = async () => {
     let employee: Employee = {
         firstName: "Testi",
